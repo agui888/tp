@@ -43,7 +43,9 @@ end
 
 function tp.read(path)
     local file = io.open(path, 'r')
-    return file:read('*a')
+    if file then
+        return file:read('*a')
+    end
 end
 
 function tp.renderFile(path, opt)
@@ -54,14 +56,26 @@ function tp.renderFile(path, opt)
 end
 
 function tp.compile(str, opt)
-    return loadstring(tp.parse(str, opt))
+    opt = opt or {}
+    local func = tp.parse(str, opt)
+    if func then
+        local ret, msg = loadstring(func) -- here get error msg
+        if ret then
+            if opt.filename and opt.cache then
+                cache[opt.filename] = ret
+            end
+            return ret
+        end
+        print(msg, '\n', func) -- TODO, handle it and more clear
+    end
 end
 
 function tp.parse(str, opt)
+    if not str then return end
     opt = opt or {}
     local func = {'local ret = {}'}
     local add = function(str, escape)
-        if escape then
+        if opt.escape ~= false and escape then
             str = 'escape(' .. str .. ')'
         end
         table.insert(func, 'table.insert(ret, ' .. str .. ')')
@@ -77,32 +91,31 @@ function tp.parse(str, opt)
         elseif _.indexOf(str, 'include') == 1 then
             local include = _.trim(str:sub(8))
             if opt.filename then
-
                 include = tp.pathResolve(opt.filename, include)
                 include = tp.read(include)
                 include = tp.parse(include, opt)
                 include = '(function() ' .. include .. ' end)()'
                 add(include)
-                --table.insert(func, include)
             end
         else
             table.insert(func, str)
         end
     end
 
-    local function getHtml(str)
-        add('"' .. str:gsub('\n', '\\n'):gsub('"', '\"') .. '"')
+    local function getPlain(str)
+        add('"' .. str:gsub('\n', '\\n'):gsub('"', '\\"') .. '"')
     end
 
     _(str):chain():split(tp.open):each(function(x)
         local split = _.split(x, tp.close)
         if split[2] then
             getLua(split[1])
-            getHtml(split[2])
+            getPlain(split[2])
         else
-            getHtml(split[1])
+            getPlain(split[1])
         end
     end)
+
     table.insert(func, 'return table.concat(ret, "")')
     func = _.join(func, '\n')
     return func

@@ -16,4 +16,5 @@ local opt = {
 
 print(tp.render(tmpl, opt))
 print(tp.renderFile('xxx.tmpl', opt))
+--print(tp.renderFile('xxxaaa.tmpl', opt))
 
