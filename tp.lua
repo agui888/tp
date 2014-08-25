@@ -21,7 +21,7 @@ function tp.render(str, opt)
     opt = opt or {}
     opt.escape = tp.escape
     local fn, msg
-    if opt.cache and opt.filename then
+    if opt.cache and opt.filename and cache[opt.filename] then
         fn = cache[opt.filename]
     else
         fn, msg = tp.compile(str, opt)

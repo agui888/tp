@@ -1,7 +1,8 @@
 var ejs = require('ejs')
+var doT = require('dot')
 
 var LEN = 1000
-var COUNT = 10000
+var COUNT = 1000
 
 var data = []
 
@@ -30,7 +31,7 @@ var tmpl = '\
 ejs.open = '{{'
 ejs.close = '}}'
 
-console.time(1)
+console.time('ejs')
 
 for (var i = 0; i < COUNT; i++) {
     ejs.render(tmpl, {
@@ -39,4 +40,5 @@ for (var i = 0; i < COUNT; i++) {
         cache: true
     })
 }
-console.timeEnd(1)
+
+console.timeEnd('ejs')

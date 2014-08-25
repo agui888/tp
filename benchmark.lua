@@ -2,7 +2,7 @@ local data = {}
 
 local LEN = 1000
 
-local COUNT = 10000000
+local COUNT = 1000
 
 for i = 1, LEN do
     table.insert(data, {
